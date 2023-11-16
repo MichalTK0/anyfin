@@ -1,42 +1,74 @@
-from collections import defaultdict
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
+
+
+class Policy(models.Model):
+    policy_name = models.CharField(max_length=255)
+    max_income = models.DecimalField(max_digits=9, decimal_places=2, null=True, blank=True,
+                                     validators=[MinValueValidator(0)]
+                                     )
+    min_income = models.DecimalField(max_digits=9, decimal_places=2, validators=[MinValueValidator(0)])
+    max_debt_ratio = models.DecimalField(max_digits=9, decimal_places=2, validators=[MinValueValidator(0)])
+    max_payment_remarks = models.IntegerField(validators=[MinValueValidator(0)])
+    max_payment_remarks_12m = models.IntegerField(validators=[MinValueValidator(0)])
+    min_age = models.IntegerField(default=18, validators=[MinValueValidator(0), MaxValueValidator(101)])
+    max_age = models.IntegerField(default=101, validators=[MinValueValidator(0), MaxValueValidator(101)])
+
+    def __str__(self):
+        return f"Policy {self.id}: {self.policy_name}"
 
 
 class Customer(models.Model):
-    # TODO: improve validation. Can some of these be negative or not?
-    customer_income = models.DecimalField(max_digits=9, decimal_places=2)
-    customer_debt = models.DecimalField(max_digits=9, decimal_places=2)
-    payment_remarks_12m = models.IntegerField()
-    payment_remarks = models.IntegerField()
-    customer_age = models.IntegerField()
+    customer_name = models.CharField(max_length=255)
+    customer_income = models.DecimalField(max_digits=9, decimal_places=2, validators=[MinValueValidator(0)])
+    customer_debt = models.DecimalField(max_digits=9, decimal_places=2, validators=[MinValueValidator(0)])
+    payment_remarks_12m = models.IntegerField(validators=[MinValueValidator(0)])
+    payment_remarks = models.IntegerField(validators=[MinValueValidator(0)])
+    customer_age = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(101)])
+
+    def __str__(self):
+        return f"Customer {self.id}: {self.customer_name}"
+
+
+class CustomerPolicy(models.Model):
+    customer = models.OneToOneField(Customer, on_delete=models.CASCADE)
+    policy = models.ForeignKey(Policy, on_delete=models.CASCADE)
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
     def clean(self):
-        super().clean()
-        errors = defaultdict(list)
+        errors = []
 
-        # Validate income
-        if self.customer_income < 500:
-            errors['customer_income'].append('LOW_INCOME')
+        # Apply policy constraints
+        if self.policy:
+            if float(self.customer.customer_income) < float(self.policy.min_income):
+                errors.append('LOW_INCOME')
 
-        # Validate debt based on income
-        if float(self.customer_debt) > 0.5 * float(self.customer_income):
-            errors['customer_debt'].append('HIGH_DEBT_FOR_INCOME')
+            if self.policy.max_income is not None \
+                    and float(self.customer.customer_income) > float(self.policy.max_income):
+                errors.append('HIGH_INCOME')
 
-        # Validate payment_remarks_12m
-        if self.payment_remarks_12m > 0:
-            errors['payment_remarks_12m'].append('PAYMENT_REMARKS_12M')
+            if float(self.customer.customer_debt) \
+                    > float(self.policy.max_debt_ratio) * float(self.customer.customer_income):
+                errors.append('HIGH_DEBT_FOR_INCOME')
 
-        # Validate payment_remarks
-        if self.payment_remarks > 1:
-            errors['payment_remarks'].append('PAYMENT_REMARKS')
+            if self.customer.payment_remarks_12m > self.policy.max_payment_remarks_12m:
+                errors.append('PAYMENT_REMARKS_12M')
 
-        # Validate age
-        if self.customer_age < 18:
-            errors['customer_age'].append('UNDERAGE')
+            if self.customer.payment_remarks > self.policy.max_payment_remarks:
+                errors.append('PAYMENT_REMARKS')
+
+            if self.customer.customer_age < self.policy.min_age:
+                errors.append('UNDERAGE')
+
+            if self.customer.customer_age > self.policy.max_age:
+                errors.append('ABOVE_MAX_AGE')
 
         if errors:
             raise ValidationError(errors)
 
     def __str__(self):
-        return f"Customer {self.id}"
+        return f"Policy {self.policy.policy_name} for {self.customer.customer_name}"

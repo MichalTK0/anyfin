@@ -19,7 +19,7 @@ class CustomerModelTests(TestCase):
             low_income_customer.full_clean()
 
         errors = context.exception.message_dict
-        self.assertEqual(errors['customer_income'], ['LOW_INCOME'])
+        self.assertEqual(errors["customer_income"], ["LOW_INCOME"])
 
     def test_high_debt_validation(self):
 
@@ -35,7 +35,7 @@ class CustomerModelTests(TestCase):
             high_debt_customer.full_clean()
 
         errors = context.exception.message_dict
-        self.assertEqual(errors['customer_debt'], ['HIGH_DEBT_FOR_INCOME'])
+        self.assertEqual(errors["customer_debt"], ["HIGH_DEBT_FOR_INCOME"])
 
     def test_valid_customer(self):
 
@@ -63,4 +63,4 @@ class CustomerModelTests(TestCase):
             underage_customer.full_clean()
 
         errors = context.exception.message_dict
-        self.assertEqual(errors['customer_age'], ['UNDERAGE'])
+        self.assertEqual(errors["customer_age"], ["UNDERAGE"])

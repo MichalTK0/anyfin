@@ -6,7 +6,7 @@ from rest_framework.test import APITestCase
 class CustomerViewSetTests(APITestCase):
 
     def test_create_customer_accept(self):
-        url = reverse('customer-list')
+        url = reverse("customer-list")
         data = {
             "customer_income": 1000,
             "customer_debt": 500,
@@ -15,13 +15,13 @@ class CustomerViewSetTests(APITestCase):
             "customer_age": 20
         }
 
-        response = self.client.post(url, data, format='json')
+        response = self.client.post(url, data, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data, {"message": "ACCEPT"})
 
     def test_create_customer_reject(self):
-        url = reverse('customer-list')
+        url = reverse("customer-list")
         data = {
             "customer_income": 100,
             "customer_debt": 500,
@@ -30,7 +30,7 @@ class CustomerViewSetTests(APITestCase):
             "customer_age": 12
         }
 
-        response = self.client.post(url, data, format='json')
+        response = self.client.post(url, data, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data, {

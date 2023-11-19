@@ -39,6 +39,9 @@ class CustomerPolicy(models.Model):
     accepted = models.BooleanField(default=False)
     rejection_reason = models.CharField(max_length=255, blank=True, null=True)
 
+    class Meta:
+        unique_together = ['customer', 'policy']
+
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)

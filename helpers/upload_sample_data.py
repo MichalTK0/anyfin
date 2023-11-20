@@ -52,7 +52,7 @@ for name, max_income, min_income, max_debt, max_remarks, max_remarks_12m, min_ag
     print(resp)
     policy_ids.append(resp['detail']['id'])
 
-# Try assigning every customer to every policy
+# Try assigning every customer to every policy to generate valid and rejected policies.
 for c_id in customer_ids:
 
     for p_id in policy_ids:

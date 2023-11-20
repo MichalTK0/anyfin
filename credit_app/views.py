@@ -13,9 +13,9 @@ class SimpleViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
 
         try:
+            # Create the model to surface the primary key, returned as the ID in the resp.
             serializer.is_valid(raise_exception=True)
             self.perform_create(serializer)
-            # Create the model to surface the primary key, returned as the ID in the resp.
         except serializers.ValidationError as e:
 
             response_data = {
@@ -52,9 +52,9 @@ class CustomerPolicyViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
 
         try:
+            # Create the model to surface the primary key, returned as the ID in the resp.
             serializer.is_valid(raise_exception=True)
             self.perform_create(serializer)
-            # Create the model to surface the primary key, returned as the ID in the resp.
 
             if not serializer.instance.accepted:
 
@@ -64,16 +64,14 @@ class CustomerPolicyViewSet(viewsets.ModelViewSet):
                     "reason": serializer.instance.rejection_reason
                 }
 
-                response_data["detail"]["id"] = serializer.instance.pk
-                return Response(response_data, status=status.HTTP_201_CREATED)
             else:
                 response_data = {
                     "message": "ACCEPT",
                     "detail": serializer.data
                 }
 
-                response_data["detail"]["id"] = serializer.instance.pk
-                return Response(response_data, status=status.HTTP_201_CREATED)
+            response_data["detail"]["id"] = serializer.instance.pk
+            return Response(response_data, status=status.HTTP_201_CREATED)
 
         except serializers.ValidationError as e:
 

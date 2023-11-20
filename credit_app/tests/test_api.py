@@ -1,10 +1,17 @@
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 from credit_app.models import Customer, Policy
-from django.core.exceptions import ValidationError
 
 
 class CustomerAPITests(APITestCase):
+    """
+    Customer API Endpoint Tests Cases
+
+    Tests:
+    test_create_customer_accept: submits a valid customer, expects a 201 status with ACCEPT message.
+    test_create_customer_reject: submits an invalid customer, expects a 400 status, REJECT message, errors on a missing
+    customer_name field and wrong data type for customer_income field.
+    """
 
     def setUp(self):
         self.factory = APIClient()
@@ -49,43 +56,18 @@ class CustomerAPITests(APITestCase):
 
 
 class PolicyAPITests(APITestCase):
+    """
+    Policy API Endpoint Tests Cases
+
+    Tests:
+    test_create_policy_accept: submits a valid policy, expects a 201 status with ACCEPT message.
+    test_create_policy_reject: submits an invalid policy, expects a 400 status, REJECT message, errors on a missing
+    policy_name field and wrong data type for max_income field.
+    """
 
     def setUp(self):
         self.factory = APIClient()
         self.policy_endpoint = '/api/policies/'
-
-        # create a customer to be used in policy tests.
-
-        self.valid_customer = Customer.objects.create(
-            customer_income=1000,
-            customer_debt=499,
-            payment_remarks_12m=0,
-            payment_remarks=0,
-            customer_age=21,
-        )
-
-        # create two policies, one which will accept, one which will reject the customer
-        self.accept_policy = Policy.objects.create(
-            policy_name="test",
-            max_income=50000,
-            min_income=0,
-            max_debt_ratio=0.5,
-            max_payment_remarks=0,
-            max_payment_remarks_12m=1,
-            min_age=18,
-            max_age=80
-        )
-
-        self.reject_policy = Policy.objects.create(
-            policy_name="test",
-            max_income=50000,
-            min_income=5000,
-            max_debt_ratio=0.5,
-            max_payment_remarks=0,
-            max_payment_remarks_12m=1,
-            min_age=30,
-            max_age=80
-        )
 
     def test_create_policy_accept(self):
         data = {
@@ -130,7 +112,24 @@ class PolicyAPITests(APITestCase):
 
 
 class CustomerPolicyAPITests(APITestCase):
+    """
+    CustomerPolicy API Endpoint Tests Cases
+    For each test a valid customer is created along with two policies, one which will accept the customer and one which
+    will reject the customer.
 
+    Tests:
+    test_create_customer_policy_accept: submits a valid customer policy, expects a 201 status with ACCEPT message,
+    accept boolean set to true, and no rejection reasons.
+
+    test_create_customer_policy_reject: submits a valid customer policy, with a customer which will fail its constraints
+    expects a 201 status, REJECT message, accept boolean set to false, and rejection reasons relating to age and income.
+
+    test_customer_can_have_multiple_policies: submits two different customer policies for the same customer.
+    Expects a 201 for both.
+
+    test_customer_cant_have_same_policy: submits the same customer policy twice. Expects a 201 for the first request,
+    a 400 for the second.
+    """
     def setUp(self):
         self.factory = APIClient()
         self.policy_endpoint = '/api/customer_policies/'

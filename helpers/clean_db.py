@@ -8,6 +8,10 @@ from credit_app.models import Customer, Policy, CustomerPolicy
 
 
 def clean_models():
+    """
+    Helper function to clean all models from the database.
+    :return: None
+    """
     CustomerPolicy.objects.all().delete()
     Policy.objects.all().delete()
     Customer.objects.all().delete()

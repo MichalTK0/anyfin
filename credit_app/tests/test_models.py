@@ -6,7 +6,13 @@ GTE_ZERO_ERROR = 'Ensure this value is greater than or equal to 0.'
 
 
 class CustomerModelTests(TestCase):
-
+    """
+    Customer Model Tests Cases
+    Tests:
+    test_type_validation: tests field datatype validation.
+    test_constraint_validation: tests field constraints.
+    test_creation: tests successful model creation.
+    """
     def test_type_validation(self):
         wrong_type_customer = Customer(
             customer_name=1234,  # Name should pass as Django is smart enough to cast to str
@@ -50,7 +56,7 @@ class CustomerModelTests(TestCase):
             "customer_debt": [GTE_ZERO_ERROR],
             "payment_remarks_12m": [GTE_ZERO_ERROR],
             "payment_remarks": [GTE_ZERO_ERROR],
-            "customer_age": ['Ensure this value is less than or equal to 101.'],
+            "customer_age": ['Ensure this value is less than or equal to 125.'],
         }
 
         for field, expected_error in expected_errors.items():
@@ -71,6 +77,13 @@ class CustomerModelTests(TestCase):
 
 
 class PolicyModelTests(TestCase):
+    """
+    Policy Model Tests Cases
+    Tests:
+    test_type_validation: tests field datatype validation.
+    test_constraint_validation: tests field constraints.
+    test_creation: tests successful model creation.
+    """
 
     def test_type_validation(self):
         wrong_type_policy = Policy(
@@ -123,7 +136,7 @@ class PolicyModelTests(TestCase):
             "max_payment_remarks": [GTE_ZERO_ERROR],
             "max_payment_remarks_12m": [GTE_ZERO_ERROR],
             "min_age": [GTE_ZERO_ERROR],
-            "max_age": ['Ensure this value is less than or equal to 101.'],
+            "max_age": ['Ensure this value is less than or equal to 125.'],
         }
 
         for field, expected_error in expected_errors.items():
@@ -146,7 +159,17 @@ class PolicyModelTests(TestCase):
 
 
 class CustomerPolicyModelTest(TestCase):
+    """
+    CustomerPolicy Model Tests Cases
+    For each test a valid customer is created along with two policies, one which will accept the customer and one which
+    will reject the customer.
 
+    Tests:
+    test_accepted_policy: Tests creation of a customer policy which will be accepted.
+    test_rejected_policy: Tests creation of a customer policy which will be rejected.
+    test_customer_can_have_multiple_policies: Tests that a customer can have multiple unique policies.
+    test_customer_cant_have_same_policy: Tests that a customer cannot have multiple of the same policy.
+    """
     def setUp(self):
         # create a customer to be used in policy tests.
 
@@ -233,4 +256,4 @@ class CustomerPolicyModelTest(TestCase):
                 policy=self.accept_policy
             )
 
-        self.assertEqual(context.exception.messages, ['Customer policy with this Customer and Policy already exists.'])
+        self.assertEqual(context.exception.messages, ['Customer Policy with this Customer and Policy already exists.'])

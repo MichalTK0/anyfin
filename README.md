@@ -4,3 +4,5 @@ No offer after 7 stages though.
 
 For the project spec, see: Software Engineer - Python Assessment.pdf
 For the report and how to run, see: report.docx
+
+You probably want to use the extra branch :)
